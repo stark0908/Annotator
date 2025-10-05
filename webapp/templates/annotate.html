@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Annotate Image</title>
+    <script>
+        const imageIdFromTemplate = "{{ image_id }}";
+        const imagePathFromTemplate = "{{ image_path }}";
+    </script>
+    <script src="/static/js/annotate.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <h2 class="title">Annotating Image: {{ image_id }}</h2>
+        <button id="homeBtn" class="btn btn-home" onclick="window.location.href='/'">Home</button>
+    </header>
+
+    <div id="canvas-container">
+        <img id="annot_img" src="{{ image_path }}" />
+        <canvas id="annotationCanvas"></canvas>
+    </div>
+
+    <div class="control-panel">
+        <label for="labelSelect" class="control-label">Label:</label>
+        <select id="labelSelect" class="control-select">
+            <option value="1">Laptop</option>
+            <option value="2">Monitor</option>
+            <option value="3">Keyboard</option>
+            <option value="4">Mouse</option>
+            <option value="5">Notebook</option>
+            <option value="6">Neckband</option>
+            <option value="7">Bottle</option>
+        </select>
+
+        <button id="undoBtn" class="btn btn-secondary">Undo</button>
+        <button id="clearAllBtn" class="btn btn-warning">Clear All</button>
+        <button id="saveBtn" class="btn btn-primary">Save</button>
+    </div>
+
+    <div class="nav-links">
+        {% if image_id > 0 %}
+            <a class="nav-btn" href="/annotate/{{ image_id - 1 }}">⟵ Previous</a>
+        {% endif %}
+
+        {% if image_id + 1 < total_images %}
+            <a class="nav-btn" href="/annotate/{{ image_id + 1 }}">Next ⟶</a>
+        {% endif %}
+    </div>
+</body>
+</html>

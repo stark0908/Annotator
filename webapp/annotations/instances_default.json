@@ -1,0 +1,94 @@
+{
+    "images": [
+        {
+            "id": 0,
+            "file_name": "image_0001.png",
+            "width": 1920,
+            "height": 1080
+        }
+    ],
+    "annotations": [
+        {
+            "id": 1,
+            "image_id": 0,
+            "category_id": 1,
+            "bbox": [
+                876.0,
+                71.0,
+                413.0,
+                507.0
+            ],
+            "area": 209391.0,
+            "iscrowd": 0
+        },
+        {
+            "id": 2,
+            "image_id": 0,
+            "category_id": 2,
+            "bbox": [
+                302.0,
+                101.0,
+                634.0,
+                661.0
+            ],
+            "area": 419074.0,
+            "iscrowd": 0
+        },
+        {
+            "id": 3,
+            "image_id": 0,
+            "category_id": 3,
+            "bbox": [
+                534.0,
+                561.0,
+                438.0,
+                416.0
+            ],
+            "area": 182208.0,
+            "iscrowd": 0
+        },
+        {
+            "id": 4,
+            "image_id": 0,
+            "category_id": 5,
+            "bbox": [
+                856.0,
+                714.0,
+                544.0,
+                335.0
+            ],
+            "area": 182240.0,
+            "iscrowd": 0
+        }
+    ],
+    "categories": [
+        {
+            "id": 1,
+            "name": "Laptop"
+        },
+        {
+            "id": 2,
+            "name": "Monitor"
+        },
+        {
+            "id": 3,
+            "name": "Keyboard"
+        },
+        {
+            "id": 4,
+            "name": "Mouse"
+        },
+        {
+            "id": 5,
+            "name": "Notebook"
+        },
+        {
+            "id": 6,
+            "name": "Neckband"
+        },
+        {
+            "id": 7,
+            "name": "Bottle"
+        }
+    ]
+}

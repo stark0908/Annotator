@@ -1,0 +1,15 @@
+# Ignore folders
+annot/
+data/
+# Ignore specific file
+Video.mp4
+
+# Optional: Ignore Python cache and environment files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env/
+venv/
+*.log
