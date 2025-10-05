@@ -5,6 +5,12 @@
             "file_name": "image_0001.png",
             "width": 1920,
             "height": 1080
+        },
+        {
+            "id": 18,
+            "file_name": "image_0019.png",
+            "width": 1920,
+            "height": 1080
         }
     ],
     "annotations": [

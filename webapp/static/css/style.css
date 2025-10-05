@@ -27,26 +27,40 @@ body {
     color: white;
 }
 
-/* ---------- Canvas Container ---------- */
-#canvas-container {
-    position: relative;
-    margin: 20px auto;
-    width: 80vw;
-    height: 70vh;
-    background: #ddd;
-    border: 2px solid #bbb;
-    border-radius: 8px;
-    overflow: hidden;
+.canvas-wrapper {
+    display: flex;
+    justify-content: center;   /* Center horizontally */
+    align-items: center;       /* Optional: center vertically */
+    width: 100%;
 }
 
-#annot_img, #annotationCanvas {
+/* ---------- Canvas Container ---------- */
+/* Container limits height to 85vh and prevents overflow */
+#canvas-container {
+    position: relative;
+    display: inline-block;   /* Keeps image + canvas sized together */
+    max-height: 85vh;
+    margin: 0 auto;          /* Centers the container itself */
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+#annot_img {
+    display: block;
+    max-height: 85vh;
+    width: auto;
+    height: auto;
+}
+
+#annotationCanvas {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
 }
+
+
+
+
 
 /* ---------- Controls ---------- */
 .control-panel {

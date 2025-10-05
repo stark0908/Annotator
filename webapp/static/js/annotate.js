@@ -19,24 +19,30 @@ window.onload = function () {
     let scaleX = 1, scaleY = 1;
 
     function syncCanvasSize() {
-        const wrapper = document.getElementById("canvas-container");
-        const displayWidth = wrapper.clientWidth;
-        const displayHeight = wrapper.clientHeight;
+    const img = document.getElementById("annot_img");
+    const canvas = document.getElementById("annotationCanvas");
 
-        // Set canvas to display (scaled) size
-        canvas.style.width = displayWidth + "px";
-        canvas.style.height = displayHeight + "px";
+    // Get displayed dimensions of the image
+    const rect = img.getBoundingClientRect();
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
 
-        // Keep its internal resolution to real pixels
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
+    // Set canvas display size to match image exactly
+    canvas.style.width = displayWidth + "px";
+    canvas.style.height = displayHeight + "px";
 
-        // Calculate scale so mouse coords can map correctly
-        scaleX = img.naturalWidth / displayWidth;
-        scaleY = img.naturalHeight / displayHeight;
+    // Set internal resolution
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
 
-        console.log("Scale:", scaleX, scaleY);
-    }
+    // Scale mouse positions correctly
+    scaleX = img.naturalWidth / displayWidth;
+    scaleY = img.naturalHeight / displayHeight;
+
+    console.log("Scale:", scaleX, scaleY);
+}
+
+
 
 
     if (img.complete) {
