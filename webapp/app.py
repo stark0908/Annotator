@@ -134,7 +134,17 @@ def save_annotation():
 
 @app.route('/static_images/<filename>')
 def static_images(filename):
-    return send_from_directory(IMAGE_FOLDER, filename)
+    return send_from_directory(IMAGE_FOLDER, filename)\
+
+@app.route('/export_coco')
+def export_coco():
+    """Download the current COCO annotation file."""
+    ensure_annotations_file()
+    return send_from_directory(
+        os.path.dirname(ANNOTATIONS_FILE),
+        os.path.basename(ANNOTATIONS_FILE),
+        as_attachment=True
+    )
 
 if __name__=='__main__':
     app.run(debug=True)
