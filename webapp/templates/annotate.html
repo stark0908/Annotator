@@ -5,6 +5,7 @@
     <script>
         const imageIdFromTemplate = "{{ image_id }}";
         const imagePathFromTemplate = "{{ image_path }}";
+        const categoryNames = {{ categories | tojson }};
     </script>
     <script src="/static/js/annotate.js"></script>
     <link rel="stylesheet" href="/static/css/style.css">
@@ -13,6 +14,8 @@
     <header class="header">
         <h2 class="title">Annotating Image: {{ image_id }}</h2>
         <button id="homeBtn" class="btn btn-home" onclick="window.location.href='/export_coco'">Export</button>
+        <button id="trainBtn" class="btn btn-warning">Train Models</button>
+        <button id="autoDetectBtn" class="btn btn-accent" disabled>Auto Detect</button>
         <button id="homeBtn" class="btn btn-home" onclick="window.location.href='/'">Home</button>
     </header>
 

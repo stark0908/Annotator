@@ -8,7 +8,8 @@ window.onload = function () {
     const labelSelect = document.getElementById("labelSelect");
     const ctx = canvas.getContext("2d");
     const clearAllBtn = document.getElementById("clearAllBtn");
-
+    const trainBtn = document.getElementById("trainBtn");
+    const autoDetectBtn = document.getElementById("autoDetectBtn");
 
     let startX = 0, startY = 0;
     let isDrawing = false;
@@ -48,27 +49,49 @@ window.onload = function () {
     if (img.complete) {
         syncCanvasSize();
         loadSavedBoxes();
+        autoDetectBtn.disabled = false; // ALWAYS allow auto-detection
+
     } else {
         img.onload = function () {
             syncCanvasSize();
             loadSavedBoxes();
+            autoDetectBtn.disabled = false; // ALWAYS allow auto-detection
+
         };
     }
 
     // draw all boxes from window.boxes
     function redrawBoxes() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = 2;
-        window.boxes.forEach(b => {
-            ctx.strokeStyle = "red";
-            ctx.strokeRect(b.x, b.y, b.w, b.h);
-            // draw label text
-            ctx.font = "16px Arial";
-            ctx.fillStyle = "red";
-            const label = b.category_id ? ("object_" + b.category_id) : "object";
-            ctx.fillText(label, b.x + 4, b.y + 16);
-        });
-    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 2;
+    window.boxes = window.boxes.filter(b => {
+        let x = b.x, y = b.y, w = b.w, h = b.h;
+
+        // ✅ Ensure positive width/height
+        if (w < 0) { x = x + w; w = Math.abs(w); }
+        if (h < 0) { y = y + h; h = Math.abs(h); }
+
+        // ✅ Skip invalid boxes
+        if (w < 5 || h < 5) {
+            console.warn("⚠️ Skipping invalid box:", b);
+            return false;
+        }
+
+        // ✅ Draw safely
+        ctx.strokeStyle = "red";
+        ctx.strokeRect(x, y, w, h);
+
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "red";
+        const label = categoryNames[b.category_id] || ("class_" + b.category_id);
+        ctx.fillText(label, x + 4, y + 16);
+
+        // ✅ Update box in storage (fix negative)
+        b.x = x; b.y = y; b.w = w; b.h = h;
+        return true;
+    });
+}
+
 
     // Load existing annotations for this image
     function loadSavedBoxes() {
@@ -125,19 +148,31 @@ window.onload = function () {
 
     const category_id = parseInt(labelSelect.value) || 1;
 
-    const box = {
-        x: Math.round(startX),
-        y: Math.round(startY),
-        w: Math.round(endX - startX),
-        h: Math.round(endY - startY),
-        category_id
-    };
+    // Normalize box to ensure positive width/height
+    let x1 = Math.round(startX);
+    let y1 = Math.round(startY);
+    let x2 = Math.round(endX);
+    let y2 = Math.round(endY);
+
+    const x = Math.min(x1, x2);
+    const y = Math.min(y1, y2);
+    const w = Math.abs(x2 - x1);
+    const h = Math.abs(y2 - y1);
+
+    // Prevent invalid small/zero boxes
+    if (w < 5 || h < 5) {
+        console.log("Ignored tiny/invalid box");
+        return;
+    }
+
+    const box = { x, y, w, h, category_id };
 
     window.boxes.push(box);
     console.log("Box added:", box);
 
     redrawBoxes();
     });
+
 
 
     // Undo last box
@@ -199,4 +234,85 @@ window.onload = function () {
         });
     });
 
+    trainBtn.addEventListener("click", async () => {
+    if (!confirm("Train models using your saved annotations?")) return;
+
+    trainBtn.disabled = true;
+    trainBtn.textContent = "Training...";
+
+    try {
+        // Step 1: Train Detector
+        let detRes = await fetch("/train_detector", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({})  // empty JSON since no params were passed
+        }).then(r => r.json());
+        if (detRes.status !== "ok") throw new Error(detRes.error || "Detector training failed");
+
+        // Step 2: Train Classifier
+        let clsRes = await fetch("/train_classifier", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({})
+        }).then(r => r.json());
+        if (clsRes.status !== "ok") throw new Error(clsRes.error || "Classifier training failed");
+
+        alert("✅ Training complete!");
+        autoDetectBtn.disabled = false; // enable auto detect button
+
+    } catch (err) {
+        alert("Training failed: " + err);
+    }
+
+    trainBtn.textContent = "Train Models";
+    trainBtn.disabled = false;
+    });
+
+
+    autoDetectBtn.addEventListener("click", async () => {
+        const imageId = parseInt(imageIdFromTemplate);
+
+        autoDetectBtn.disabled = true;
+        autoDetectBtn.textContent = "Detecting...";
+
+        try {
+            let res = await fetch(`/auto_annotate/${imageId}`).then(r => r.json());
+            if (res.status !== "ok") throw new Error(res.error);
+
+            // Convert detections to window.boxes format
+            const exists = (b1, b2) => (
+                b1.x === b2.x && b1.y === b2.y && b1.w === b2.w && b1.h === b2.h
+            );
+
+            res.detections.forEach(det => {
+                let [x, y, w, h] = det.bbox;
+
+                // ✅ Clamp to positive
+                if (w < 0) { x = x + w; w = Math.abs(w); }
+                if (h < 0) { y = y + h; h = Math.abs(h); }
+
+                w = Math.max(5, w);
+                h = Math.max(5, h);
+
+                const newBox = { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), category_id: det.category_id };
+
+                if (!window.boxes.some(b => exists(b, newBox))) {
+                    window.boxes.push(newBox);
+                }
+            });
+
+            console.log("Auto detections added:", window.boxes);
+            redrawBoxes();  // call your existing redraw function
+
+        } catch (err) {
+            alert("Auto detection failed: " + err);
+        }
+
+        autoDetectBtn.textContent = "Auto Detect";
+        autoDetectBtn.disabled = false;
+    });
+
 }; // window.onload end
+
+
+
