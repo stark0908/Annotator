@@ -14,3 +14,4 @@ __pycache__/
 venv/
 *.log
 models/
+annotations/instances_default.json
