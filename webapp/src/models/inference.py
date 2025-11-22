@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
-from torchvision.models import resnet18
+from torchvision.models import mobilenet_v3_large
 from PIL import Image
 import numpy as np
 
@@ -57,7 +57,7 @@ class CocoLikeDetectionDataset(Dataset):
         for a in annots:
             x, y, w, h = a['bbox']
             boxes.append([x, y, x + w, y + h])
-            labels.append(self.cat_id_to_contiguous[a['category_id']])
+            labels.append(1)
             iscrowd.append(a.get('iscrowd', 0))
             areas.append(a.get('area', w*h))
         if boxes:
@@ -98,7 +98,7 @@ def train_detector(coco_json: str, img_root: str, out_path: str, device: str = N
     device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
     print("Using",device)
     dataset = CocoLikeDetectionDataset(coco_json, img_root)
-    num_classes = len(dataset.cat_ids) + 1
+    num_classes = 2
     model = get_fasterrcnn(num_classes).to(device)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
     params = [p for p in model.parameters() if p.requires_grad]
@@ -195,15 +195,22 @@ class RoiAnnotationDataset(Dataset):
 class EmbeddingNet(nn.Module):
     def __init__(self, emb_dim: int = 256, pretrained: bool = True):
         super().__init__()
-        base = resnet18(pretrained=pretrained)
+        base = mobilenet_v3_large(weights="IMAGENET1K_V2")
         modules = list(base.children())[:-1]
         self.backbone = nn.Sequential(*modules)
-        self.fc = nn.Linear(512, emb_dim)
+        feat_dim = 960
+        self.fc = nn.Linear(feat_dim, emb_dim)
+        self.head = nn.Sequential(
+        nn.Linear(feat_dim, 512),
+        nn.ReLU(inplace=True),
+        nn.Linear(512, emb_dim))
+        self.dropout = nn.Dropout(0.2)
 
     def forward(self, x):
         x = self.backbone(x)
         x = x.reshape(x.size(0), -1)
-        x = self.fc(x)
+        x = self.dropout(x)
+        x = self.head(x)
         x = F.normalize(x, p=2, dim=1)
         return x
 

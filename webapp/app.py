@@ -179,7 +179,7 @@ def api_train_detector():
     Request JSON (optional): { "epochs": int, "batch_size": int, "lr": float }
     """
     body = request.get_json() or {}
-    epochs = int(body.get('epochs', 60))
+    epochs = int(body.get('epochs', 40))
     batch_size = int(body.get('batch_size', 2))
     lr = float(body.get('lr', 1e-4))
 
