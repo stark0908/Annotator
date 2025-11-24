@@ -1,4 +1,4 @@
-# 🏷️ Annotator - AI-Powered Image Annotation Tool
+#  Annotator - AI-Powered Image Annotation Tool
 
 A powerful web-based image annotation tool with integrated machine learning capabilities for object detection and classification. Built with Flask, this tool combines manual annotation with automated detection using Faster R-CNN and Prototypical Networks for few-shot learning.
 
